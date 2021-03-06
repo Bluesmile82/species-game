@@ -19,21 +19,11 @@ const Tile = ({ x = 0, y = 0, color, draggingPiece, state, changeTileState, tile
 
   const scale = tileScale
   const currentTile = { x, y, color, state }
-  const [highlightedColor, setHighlightedColor] = useState()
   const setHighlighted = (highlighted) => {
-    if (highlighted) {
-      changeTileState({
-        ...currentTile,
-        highlighted: true,
-        state: draggingPiece
-      });
-    } else {
-      changeTileState({
-        ...currentTile,
-        highlighted: false,
-        state: null
-      });
-    }
+    changeTileState({
+      ...currentTile,
+      highlighted
+    });
   }
   return (
     <mesh

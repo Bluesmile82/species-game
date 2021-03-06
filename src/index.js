@@ -62,17 +62,18 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
 }
 
 const Scene = () => {
-  const [draggingPiece, setDraggingPiece] = useState()
-  console.log('s', draggingPiece)
+  const [generatedTiles, setGeneratedTiles] = useState(1);
+  const [draggingPiece, setDraggingPiece] = useState();
   const [draggables, setDraggables] = useState([
-    { x: -8, y: 0, tileType: 'straight' },
-    { x: -5, y: -5, tileType: 'turn'  }
+    { index: 0, x: -8, y: 0, tileType: 'straight' },
+    { index: 1, x: -5, y: -5, tileType: 'turn'  }
   ]);
 
   const resetDraggable = (index) => {
-    const updatedDraggables = [...draggables];
-    updatedDraggables[index] = { ...updatedDraggables[index], x: -5, y: -2 };
-    setDraggables(...updatedDraggables);
+    let updatedDraggables = [...draggables];
+    updatedDraggables.splice(index, 1)
+    setGeneratedTiles(generatedTiles + 1)
+    setDraggables([...updatedDraggables, { index: generatedTiles, x: -8, y: 0, tileType: 'straight' }]);
   };
 
   const gridSize = 6
@@ -92,10 +93,13 @@ const Scene = () => {
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
       <rectAreaLight intensity={0.8} attr={['white', 1, 1, 1]} />
-      {draggables.map(d =>
+      {draggables.map((d) =>
         <Draggable
           setDraggingPiece={setDraggingPiece}
+          resetDraggable={resetDraggable}
           tileScale={tileScale}
+          key={d.index}
+          index={d.index}
           x={d.x}
           y={d.y}
           tileType={d.tileType}
