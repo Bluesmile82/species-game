@@ -16,10 +16,11 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
       .map((_, i) => i)
   const setInitialTiles = () =>
     createArray(x)
-      .map((i) => createArray(y).map((j) => ({ x: i, y: j, state: null, piece: null, color: 'gray' })))
+      .map((i) => createArray(y).map((j) => ({ x: i, y: j, state: null, piece: null, color: 'gray', highlighted: false })))
       .flat()
 
   const [tiles, setTiles] = useState(setInitialTiles())
+
   const changeTileState = (tile) => {
     const updatedTile = tiles.find((t) => t.x === tile.x && t.y === tile.y)
     const tileIndex = tiles.indexOf(updatedTile)
@@ -27,11 +28,12 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
     updatedTiles[tileIndex] = tile
     setTiles(updatedTiles)
   }
+
   const getRandomTile = () => tiles[Math.floor(Math.random() * tiles.length)]
 
   const blockTile = () => {
     const randomTile = getRandomTile()
-    if (randomTile.state !== 'highlighted') {
+    if (!randomTile.state) {
       randomTile.state = 'blocked'
       changeTileState(randomTile)
     } else {
@@ -41,7 +43,7 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
 
   useSetInterval(() => {
     blockTile()
-  }, 1000)
+  }, 5000)
 
   return (
     <group>
@@ -61,20 +63,46 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
 
 const Scene = () => {
   const [draggingPiece, setDraggingPiece] = useState()
+  console.log('s', draggingPiece)
+  const [draggables, setDraggables] = useState([
+    { x: -8, y: 0, tileType: 'straight' },
+    { x: -5, y: -5, tileType: 'turn'  }
+  ]);
+
+  const resetDraggable = (index) => {
+    const updatedDraggables = [...draggables];
+    updatedDraggables[index] = { ...updatedDraggables[index], x: -5, y: -2 };
+    setDraggables(...updatedDraggables);
+  };
+
   const gridSize = 6
   const tileScale = 1
   const rotation = [Math.PI / 4, Math.PI / 4, 0]
   return (
     <>
       <group position={[-gridSize, 0, 0]} rotation={rotation}>
-        <Grid x={gridSize} y={gridSize} draggingPiece={draggingPiece} setDraggingPiece={setDraggingPiece} tileScale={tileScale} />
+        <Grid
+          x={gridSize}
+          y={gridSize}
+          draggingPiece={draggingPiece}
+          setDraggingPiece={setDraggingPiece}
+          tileScale={tileScale}
+        />
       </group>
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
       <rectAreaLight intensity={0.8} attr={['white', 1, 1, 1]} />
-      <Draggable setDraggingPiece={setDraggingPiece} tileScale={tileScale} />
+      {draggables.map(d =>
+        <Draggable
+          setDraggingPiece={setDraggingPiece}
+          tileScale={tileScale}
+          x={d.x}
+          y={d.y}
+          tileType={d.tileType}
+        />
+      )}
     </>
-  )
+  );
 }
 
 const App = () => {

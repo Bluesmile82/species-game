@@ -3,14 +3,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { useLoader } from 'react-three-fiber'
 import * as THREE from 'three'
 
-const Tile = ({ x = 0, y = 0, color, draggingPiece, setDraggingPiece, state, changeTileState, tileScale }) => {
+const Tile = ({ x = 0, y = 0, color, draggingPiece, state, changeTileState, tileScale, highlighted }) => {
   const gltf = useLoader(GLTFLoader, '/cube.glb')
   const textureUrl = {
     'blocked': '/lava.png',
-    'highlighted': '/jungle.jpg'
-  }[state] || '';
+    'straight': '/road-1.jpg',
+    'turn': '/road-2.jpg',
+  }[state] || '/jungle.jpg';
   const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [textureUrl])
-console.log('-', textureUrl, state)
   const {
     nodes: {
       Cube: { geometry, material }
@@ -22,9 +22,17 @@ console.log('-', textureUrl, state)
   const [highlightedColor, setHighlightedColor] = useState()
   const setHighlighted = (highlighted) => {
     if (highlighted) {
-      changeTileState({ ...currentTile, state: 'highlighted' })
+      changeTileState({
+        ...currentTile,
+        highlighted: true,
+        state: draggingPiece
+      });
     } else {
-      changeTileState({ ...currentTile, state: null, color })
+      changeTileState({
+        ...currentTile,
+        highlighted: false,
+        state: null
+      });
     }
   }
   return (
@@ -33,24 +41,25 @@ console.log('-', textureUrl, state)
       scale={[scale, scale / 4, scale]}
       position={[x * 2 * scale, 0, y * 2 * scale]}
       onPointerOver={() => {
-        setHighlighted(true)
+        if (draggingPiece) {
+          setHighlighted(true)
+        }
       }}
       onPointerUp={() => {
-        if (draggingPiece === 'dragging') {
-          setHighlightedColor('white')
-          setDraggingPiece(null)
+        if (draggingPiece) {
+          changeTileState({ ...currentTile, state: draggingPiece });
         }
       }}
       material={material}
       geometry={geometry}
-      onPointerOut={() => setHighlighted(false)}>
+      onPointerOut={() => setHighlighted(false)}
+    >
       <meshPhongMaterial
         attach="material"
-        opacity={highlightedColor || state === 'highlighted' || state === 'blocked' ? 1 : 0.2}
+        opacity={highlighted || state ? 1 : 0.2}
         transparent
-        color={state === 'highlighted' ? 'red' : color}>
-        {state && <primitive attach="map" object={texture} />}
-      </meshPhongMaterial>
+        map={texture}
+      />
     </mesh>
   )
 }
