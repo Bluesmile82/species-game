@@ -6,7 +6,6 @@ import * as THREE from 'three';
 
 function DraggableMesh({
   setDraggingPiece,
-  resetDraggable,
   tileScale,
   index,
   x = 0,
@@ -36,11 +35,9 @@ function DraggableMesh({
   const bind = useDrag(
     ({ offset: [x, y], first, last }) => {
       const [, , pz] = position;
-      if (first) setDraggingPiece(tileType);
+      if (first) setDraggingPiece({ type: tileType, index });
       if (last) {
         setDraggingPiece(null);
-        console.log('d', index)
-        resetDraggable(index);
       }
       setPosition([x / aspect, -y / aspect, pz]);
     },
@@ -58,7 +55,7 @@ function DraggableMesh({
         geometry={geometry}
       >
         <boxBufferGeometry attach="geometry" />
-        <meshBasicMaterial attach="material" map={texture} />
+        <meshBasicMaterial attach="material" map={texture} color="lightblue" />
       </mesh>
     </group>
   );

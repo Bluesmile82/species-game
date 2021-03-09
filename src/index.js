@@ -1,15 +1,16 @@
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Canvas } from 'react-three-fiber'
 import Draggable from './draggable'
 import Tile from './components/tile'
 import useSetInterval from 'use-set-interval'
-
+import sample from 'lodash/sample';
 
 import './styles.css'
 
+const TILE_TYPES = ['straight', 'turn'];
 
-const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
+const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale, resetDraggable }) => {
   const createArray = (n) =>
     Array(n)
       .fill(null)
@@ -35,9 +36,12 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
     const randomTile = getRandomTile()
     if (!randomTile.state) {
       randomTile.state = 'blocked'
+      randomTile.positioned = true
       changeTileState(randomTile)
     } else {
-      if (tiles.some((t) => t.state !== 'blocked')) blockTile()
+      if (tiles.some((t) => t.state !== 'blocked')) {
+        blockTile()
+      }
     }
   }
 
@@ -47,14 +51,15 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
 
   return (
     <group>
-      {tiles.map((coords) => (
+      {tiles.map((tileProperties) => (
         <Tile
-          key={`${coords.x}-${coords.y}`}
-          {...coords}
+          key={`${tileProperties.x}-${tileProperties.y}`}
+          {...tileProperties}
           draggingPiece={draggingPiece}
           setDraggingPiece={setDraggingPiece}
           changeTileState={changeTileState}
           tileScale={tileScale}
+          resetDraggable={resetDraggable}
         />
       ))}
     </group>
@@ -62,18 +67,25 @@ const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale }) => {
 }
 
 const Scene = () => {
-  const [generatedTiles, setGeneratedTiles] = useState(1);
+  let lastGeneratedIndex = 0;
   const [draggingPiece, setDraggingPiece] = useState();
-  const [draggables, setDraggables] = useState([
-    { index: 0, x: -8, y: 0, tileType: 'straight' },
-    { index: 1, x: -5, y: -5, tileType: 'turn'  }
-  ]);
+  const [draggables, setDraggables] = useState();
+
+  const createDraggable = () => {
+    lastGeneratedIndex += 1;
+    setDraggables({ ...draggables, [lastGeneratedIndex]: { index: lastGeneratedIndex, x: Math.random() * -8, y: 0, tileType: sample(TILE_TYPES) }});
+  };
+
+  useEffect(() => {
+    createDraggable();
+    createDraggable();
+  }, []);
 
   const resetDraggable = (index) => {
-    let updatedDraggables = [...draggables];
-    updatedDraggables.splice(index, 1)
-    setGeneratedTiles(generatedTiles + 1)
-    setDraggables([...updatedDraggables, { index: generatedTiles, x: -8, y: 0, tileType: 'straight' }]);
+    const updatedDraggables = { ...draggables };
+    delete updatedDraggables[index];
+    setDraggables(updatedDraggables);
+    createDraggable();
   };
 
   const gridSize = 6
@@ -87,22 +99,22 @@ const Scene = () => {
           y={gridSize}
           draggingPiece={draggingPiece}
           setDraggingPiece={setDraggingPiece}
+          resetDraggable={resetDraggable}
           tileScale={tileScale}
         />
       </group>
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
       <rectAreaLight intensity={0.8} attr={['white', 1, 1, 1]} />
-      {draggables.map((d) =>
+      {draggables && Object.entries(draggables).map(([key, value]) =>
         <Draggable
           setDraggingPiece={setDraggingPiece}
-          resetDraggable={resetDraggable}
           tileScale={tileScale}
-          key={d.index}
-          index={d.index}
-          x={d.x}
-          y={d.y}
-          tileType={d.tileType}
+          key={value.index}
+          index={key}
+          x={value.x}
+          y={value.y}
+          tileType={value.tileType}
         />
       )}
     </>

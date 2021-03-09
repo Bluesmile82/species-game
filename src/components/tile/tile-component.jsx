@@ -1,30 +1,53 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { useLoader } from 'react-three-fiber'
 import * as THREE from 'three'
 
-const Tile = ({ x = 0, y = 0, color, draggingPiece, state, changeTileState, tileScale, highlighted }) => {
-  const gltf = useLoader(GLTFLoader, '/cube.glb')
-  const textureUrl = {
-    'blocked': '/lava.png',
-    'straight': '/road-1.jpg',
-    'turn': '/road-2.jpg',
-  }[state] || '/jungle.jpg';
-  const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [textureUrl])
+const Tile = ({
+  x = 0,
+  y = 0,
+  color,
+  draggingPiece,
+  state,
+  positioned,
+  changeTileState,
+  tileScale,
+  highlighted,
+  resetDraggable,
+}) => {
+  const gltf = useLoader(GLTFLoader, "/cube.glb");
+  const textureUrl =
+    {
+      blocked: "/lava.png",
+      straight: "/road-1.jpg",
+      turn: "/road-2.jpg",
+    }[state] || "/jungle.jpg";
+  const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [
+    textureUrl,
+  ]);
   const {
     nodes: {
-      Cube: { geometry, material }
-    }
-  } = gltf
-
-  const scale = tileScale
-  const currentTile = { x, y, color, state }
+      Cube: { geometry, material },
+    },
+  } = gltf;
+  const scale = tileScale;
+  const currentTile = { x, y, color, state, positioned };
   const setHighlighted = (highlighted) => {
-    changeTileState({
-      ...currentTile,
-      highlighted
-    });
-  }
+    if (!highlighted && !currentTile.positioned) {
+      changeTileState({
+        ...currentTile,
+        highlighted: false,
+        state: null,
+      });
+    }
+    if (!currentTile.state) {
+      changeTileState({
+        ...currentTile,
+        highlighted,
+        state: highlighted ? draggingPiece.type : null,
+      });
+    }
+  };
   return (
     <mesh
       attach="mesh"
@@ -32,12 +55,17 @@ const Tile = ({ x = 0, y = 0, color, draggingPiece, state, changeTileState, tile
       position={[x * 2 * scale, 0, y * 2 * scale]}
       onPointerOver={() => {
         if (draggingPiece) {
-          setHighlighted(true)
+          setHighlighted(true);
         }
       }}
       onPointerUp={() => {
         if (draggingPiece) {
-          changeTileState({ ...currentTile, state: draggingPiece });
+          resetDraggable(draggingPiece.index);
+          changeTileState({
+            ...currentTile,
+            state: draggingPiece.type,
+            positioned: true,
+          });
         }
       }}
       material={material}
@@ -51,7 +79,7 @@ const Tile = ({ x = 0, y = 0, color, draggingPiece, state, changeTileState, tile
         map={texture}
       />
     </mesh>
-  )
-}
+  );
+};
 
 export default Tile;
