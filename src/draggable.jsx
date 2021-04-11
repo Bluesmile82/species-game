@@ -35,7 +35,6 @@ function Draggable({
 
   const previousDraggableIndex = usePrevious(draggableIndex);
   useEffect(() => {
-    console.log('prev', draggableIndex, previousDraggableIndex);
     if (draggableIndex && draggableIndex !== previousDraggableIndex) {
       setPosition([x, y, tileScale * 3]);
     }

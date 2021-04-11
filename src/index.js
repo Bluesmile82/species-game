@@ -119,9 +119,7 @@ const Scene = () => {
     const updatedDraggables = { ...draggables };
     const { x, y } = DRAGGABLE_PLACES[index];
     const { type, rotation } = randomProperty(TILES);
-    console.log('sss', index, lastGeneratedIndex)
     updatedDraggables[index] = { ...updatedDraggables[index], x, y, draggableIndex: lastGeneratedIndex + 1, tileType: { type, rotation } , rotation };
-    console.log(draggables, updatedDraggables);
     setLastGeneratedIndex(lastGeneratedIndex + 1)
     setDraggables(updatedDraggables);
   };
