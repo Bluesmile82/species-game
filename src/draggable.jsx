@@ -1,45 +1,57 @@
-import React, { useRef, useState, useMemo } from 'react'
-import { useThree, useLoader } from 'react-three-fiber'
-import { useDrag } from 'react-use-gesture'
+import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { useThree, useLoader } from 'react-three-fiber';
+import { useDrag } from 'react-use-gesture';
+import usePrevious from './hooks/use-previous';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 
-function DraggableMesh({
+function Draggable({
   setDraggingPiece,
+  draggableIndex,
   tileScale,
   index,
   x = 0,
   y = 0,
-  tileType,
+  tileType
 }) {
   const ref = useRef();
   const textureUrl =
     {
-      jungle: "/jungle.jpg",
-      straight: "/road-1.jpg",
-      turn: "/road-2.jpg",
-    }[tileType] || "/jungle.jpg";
+      jungle: '/jungle.jpg',
+      straight: '/road-1.jpg',
+      turn: '/road-2.jpg'
+    }[tileType.type] || '/jungle.jpg';
   const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [
-    textureUrl,
+    textureUrl
   ]);
-  const gltf = useLoader(GLTFLoader, "/cube.glb");
+  const gltf = useLoader(GLTFLoader, '/cube.glb');
   const {
     nodes: {
-      Cube: { geometry, material },
-    },
+      Cube: { geometry, material }
+    }
   } = gltf;
 
   const [position, setPosition] = useState([0, 0, tileScale * 3]);
+
+  const previousDraggableIndex = usePrevious(draggableIndex);
+  useEffect(() => {
+    console.log('prev', draggableIndex, previousDraggableIndex);
+    if (draggableIndex && draggableIndex !== previousDraggableIndex) {
+      setPosition([x, y, tileScale * 3]);
+    }
+  }, [draggableIndex]);
+
   const { size, viewport } = useThree();
   const aspect = (size.width * 10) / viewport.width;
   const bind = useDrag(
-    ({ offset: [x, y], first, last }) => {
+    ({ offset, first, last }) => {
+      const [xOffset, yOffset] = offset;
       const [, , pz] = position;
-      if (first) setDraggingPiece({ type: tileType, index });
+      if (first) setDraggingPiece({ tileType, index, draggableIndex });
       if (last) {
         setDraggingPiece(null);
       }
-      setPosition([x / aspect, -y / aspect, pz]);
+      setPosition([xOffset / aspect, -yOffset / aspect, pz]);
     },
     { pointerEvents: true }
   );
@@ -50,6 +62,7 @@ function DraggableMesh({
         {...bind()}
         ref={ref}
         position={[x, y, 0]}
+        rotation={[0, (tileType.rotation * Math.PI) / 2, 0]}
         scale={[tileScale * 2, (tileScale * 2) / 4, tileScale * 2]}
         material={material}
         geometry={geometry}
@@ -61,4 +74,4 @@ function DraggableMesh({
   );
 }
 
-export default DraggableMesh
+export default Draggable;
