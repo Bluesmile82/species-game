@@ -14,6 +14,8 @@ const randomProperty = (obj) => {
   return obj[keys[keys.length * Math.random() << 0]];
 };
 
+const randomFromArray = (array) => array[Math.floor(Math.random() * array.length)];
+
 const Scene = () => {
   const [draggingPiece, setDraggingPiece] = useState();
   const [draggables, setDraggables] = useState();
@@ -35,7 +37,8 @@ const Scene = () => {
     const updatedDraggables = {...draggables };
     DRAGGABLE_PLACES.forEach((draggable, index) => {
       const { x, y } = draggable;
-      const randomTile = randomProperty(TILES);
+      const randomTile = randomFromArray(TILES);
+      console.log('ra', randomTile, TILES)
       const { type, rotation } = randomTile;
       updatedDraggables[index] = {
         index, x, y, tileType: { type, rotation }
@@ -47,7 +50,7 @@ const Scene = () => {
   const resetDraggable = (index) => {
     const updatedDraggables = { ...draggables };
     const { x, y } = DRAGGABLE_PLACES[index];
-    const { type, rotation } = randomProperty(TILES);
+    const { type, rotation } = randomFromArray(TILES);
     updatedDraggables[index] = { ...updatedDraggables[index], x, y, draggableIndex: lastGeneratedIndex + 1, tileType: { type, rotation } , rotation };
     setLastGeneratedIndex(lastGeneratedIndex + 1)
     setDraggables(updatedDraggables);

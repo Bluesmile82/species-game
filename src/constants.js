@@ -1,5 +1,5 @@
 const TILE_TYPES = { straight: 'straight', turn: 'turn' };
-export const TILES = {
+const TILES_KINDS = {
   '1010' : {
     type: TILE_TYPES.straight,
     rotation: 0
@@ -25,3 +25,12 @@ export const TILES = {
     rotation: 3
   }
 };
+
+export const TILES = [
+  TILES_KINDS['1010'],
+  TILES_KINDS['1010'],
+  TILES_KINDS['1010'],
+  TILES_KINDS['1010'],
+  TILES_KINDS['1100'],
+  TILES_KINDS['0110'],
+]
