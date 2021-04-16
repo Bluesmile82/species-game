@@ -8,7 +8,7 @@ const Grid = ({
   draggingPiece,
   setDraggingPiece,
   tileScale,
-  resetDraggable
+  onFitPiece
 }) => {
   const createArray = (n) =>
     Array(n)
@@ -54,7 +54,7 @@ const Grid = ({
 
   useSetInterval(() => {
     blockTile();
-  }, 5000);
+  }, 10000);
 
   return (
     <group>
@@ -66,7 +66,7 @@ const Grid = ({
           setDraggingPiece={setDraggingPiece}
           changeTileState={changeTileState}
           tileScale={tileScale}
-          resetDraggable={resetDraggable}
+          onFitPiece={onFitPiece}
         />
       ))}
     </group>

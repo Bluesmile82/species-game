@@ -9,20 +9,16 @@ import { useControls } from "leva"
 
 import './styles.css'
 
-const randomProperty = (obj) => {
-  const keys = Object.keys(obj);
-  return obj[keys[keys.length * Math.random() << 0]];
-};
-
 const randomFromArray = (array) => array[Math.floor(Math.random() * array.length)];
 
 const Scene = () => {
   const [draggingPiece, setDraggingPiece] = useState();
+  const [fittedPieces, setFittedPieces] = useState([]);
   const [draggables, setDraggables] = useState();
   const DRAGGABLE_PLACES = [{ x: -8, y: 6 }, { x: -8, y: 3 }, { x: -8, y: 0 }, { x: -8, y: -3 }]
   const [lastGeneratedIndex, setLastGeneratedIndex] = useState(DRAGGABLE_PLACES.length);
   const { rotationX, rotationY } = useControls({ rotationX: {
-    value: Math.PI / 4,
+    value: Math.PI / 5.75,
     min: - Math.PI,
     max: Math.PI,
     step: Math.PI / 16,
@@ -38,7 +34,6 @@ const Scene = () => {
     DRAGGABLE_PLACES.forEach((draggable, index) => {
       const { x, y } = draggable;
       const randomTile = randomFromArray(TILES);
-      console.log('ra', randomTile, TILES)
       const { type, rotation } = randomTile;
       updatedDraggables[index] = {
         index, x, y, tileType: { type, rotation }
@@ -46,6 +41,11 @@ const Scene = () => {
     });
     setDraggables(updatedDraggables);
   }, []);
+
+  const onFitPiece = (index) => {
+    setFittedPieces([...fittedPieces, draggables[index]]);
+    resetDraggable(index);
+  };
 
   const resetDraggable = (index) => {
     const updatedDraggables = { ...draggables };
@@ -69,14 +69,13 @@ const Scene = () => {
           draggingPiece={draggingPiece}
           setDraggingPiece={setDraggingPiece}
           tileScale={tileScale}
-          resetDraggable={resetDraggable}
         />
         <Grid
           x={gridSize}
           y={gridSize}
           draggingPiece={draggingPiece}
           setDraggingPiece={setDraggingPiece}
-          resetDraggable={resetDraggable}
+          onFitPiece={onFitPiece}
           tileScale={tileScale}
         />
         <Tile
@@ -85,7 +84,6 @@ const Scene = () => {
           draggingPiece={draggingPiece}
           setDraggingPiece={setDraggingPiece}
           tileScale={tileScale}
-          resetDraggable={resetDraggable}
         />
       </group>
       <ambientLight intensity={0.1} />
@@ -111,7 +109,7 @@ const Scene = () => {
 const App = () => {
   return (
     <div className="container">
-      <Canvas camera={{ zoom: 10, position: [0, 0, 200] }}>
+      <Canvas camera={{ zoom: 10, position: [0, 0, 100] }}>
         <Suspense fallback={null}>
           <Scene />
         </Suspense>

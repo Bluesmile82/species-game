@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { useLoader } from 'react-three-fiber'
-import * as THREE from 'three'
+import React, { useMemo } from 'react';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { useLoader } from 'react-three-fiber';
+import * as THREE from 'three';
 
 const Tile = ({
   x = 0,
@@ -9,27 +9,27 @@ const Tile = ({
   color,
   draggingPiece,
   state,
-  rotation=0,
+  rotation = 0,
   positioned,
   changeTileState,
   tileScale,
   highlighted,
-  resetDraggable,
+  onFitPiece
 }) => {
-  const gltf = useLoader(GLTFLoader, "/cube.glb");
+  const gltf = useLoader(GLTFLoader, '/cube.glb');
   const textureUrl =
     {
-      blocked: "/lava.png",
-      straight: "/road-1.jpg",
-      turn: "/road-2.jpg",
-    }[state] || "/jungle.jpg";
+      blocked: '/lava.png',
+      straight: '/road-1.jpg',
+      turn: '/road-2.jpg'
+    }[state] || '/jungle.jpg';
   const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [
-    textureUrl,
+    textureUrl
   ]);
   const {
     nodes: {
-      Cube: { geometry, material },
-    },
+      Cube: { geometry, material }
+    }
   } = gltf;
   const scale = tileScale;
   const currentTile = { x, y, color, state, positioned };
@@ -38,14 +38,14 @@ const Tile = ({
       changeTileState({
         ...currentTile,
         highlighted: false,
-        state: null,
+        state: null
       });
     }
     if (!currentTile.state) {
       changeTileState({
         ...currentTile,
         highlighted,
-        state: highlighted ? draggingPiece.tileType.type : null,
+        state: highlighted ? draggingPiece.tileType.type : null
       });
     }
   };
@@ -65,15 +65,16 @@ const Tile = ({
       }
       onPointerUp={
         changeTileState &&
+        onFitPiece &&
         (() => {
           if (draggingPiece) {
             if (!currentTile.positioned) {
-              resetDraggable(draggingPiece.index, draggingPiece.draggableIndex);
+              onFitPiece(draggingPiece.index, draggingPiece.draggableIndex);
               changeTileState({
                 ...currentTile,
                 state: draggingPiece.tileType.type,
                 rotation: draggingPiece.tileType.rotation,
-                positioned: true,
+                positioned: true
               });
             }
           }
