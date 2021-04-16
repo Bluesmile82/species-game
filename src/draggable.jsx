@@ -12,7 +12,8 @@ function Draggable({
   index,
   x = 0,
   y = 0,
-  tileType
+  tileType,
+  defaultRotation
 }) {
   const ref = useRef();
   const textureUrl =
@@ -54,13 +55,13 @@ function Draggable({
     },
     { pointerEvents: true }
   );
-  const rotation = [Math.PI / 4, Math.PI / 4, 0];
+  const rotation = [defaultRotation.rotationX, defaultRotation.rotationY, 0];
   return (
     <group rotation={rotation} position={position}>
       <mesh
         {...bind()}
         ref={ref}
-        position={[x, y, 0]}
+        position={[x, 1, y]}
         rotation={[0, (tileType.rotation * Math.PI) / 2, 0]}
         scale={[tileScale * 2, (tileScale * 2) / 4, tileScale * 2]}
         material={material}

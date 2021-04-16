@@ -3,93 +3,11 @@ import ReactDOM from 'react-dom'
 import { Canvas } from 'react-three-fiber'
 import Draggable from './draggable'
 import Tile from './components/tile'
-import useSetInterval from 'use-set-interval'
+import { TILES } from './constants';
+import Grid from './components/grid';
+import { useControls } from "leva"
 
 import './styles.css'
-
-const TILE_TYPES = { straight: 'straight', turn: 'turn' };
-const TILES = {
-  '1010' : {
-    type: TILE_TYPES.straight,
-    rotation: 0
-  },
-  '0101' : {
-    type: TILE_TYPES.straight,
-    rotation: 1
-  },
-  '1100' : {
-    type: TILE_TYPES.turn,
-    rotation: 0
-  },
-  '0110' : {
-    type: TILE_TYPES.turn,
-    rotation: 1
-  },
-  '0011' : {
-    type: TILE_TYPES.turn,
-    rotation: 2
-  },
-  '1001' : {
-    type: TILE_TYPES.turn,
-    rotation: 3
-  }
-};
-
-const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale, resetDraggable }) => {
-  const createArray = (n) =>
-    Array(n)
-      .fill(null)
-      .map((_, i) => i)
-  const setInitialTiles = () =>
-    createArray(x)
-      .map((i) => createArray(y).map((j) => ({ x: i, y: j, state: null, piece: null, highlighted: false })))
-      .flat()
-
-  const [tiles, setTiles] = useState(setInitialTiles())
-
-  const changeTileState = (tile) => {
-    const updatedTile = tiles.find((t) => t.x === tile.x && t.y === tile.y)
-    const tileIndex = tiles.indexOf(updatedTile)
-    const updatedTiles = [...tiles]
-    updatedTiles[tileIndex] = tile
-    setTiles(updatedTiles)
-  }
-
-  const getRandomTile = () => tiles[Math.floor(Math.random() * tiles.length)]
-
-  const blockTile = () => {
-    const randomTile = getRandomTile()
-    if (!randomTile.state) {
-      randomTile.state = 'blocked'
-      randomTile.positioned = true
-      changeTileState(randomTile)
-    } else {
-      if (tiles.some((t) => !t.positioned)) {
-        blockTile()
-      }
-    }
-  }
-
-  useSetInterval(() => {
-    blockTile()
-  }, 5000)
-
-  return (
-    <group>
-      {tiles.map((tileProperties) => (
-        <Tile
-          key={`${tileProperties.x}-${tileProperties.y}`}
-          {...tileProperties}
-          draggingPiece={draggingPiece}
-          setDraggingPiece={setDraggingPiece}
-          changeTileState={changeTileState}
-          tileScale={tileScale}
-          resetDraggable={resetDraggable}
-        />
-      ))}
-    </group>
-  )
-}
 
 const randomProperty = (obj) => {
   const keys = Object.keys(obj);
@@ -99,8 +17,19 @@ const randomProperty = (obj) => {
 const Scene = () => {
   const [draggingPiece, setDraggingPiece] = useState();
   const [draggables, setDraggables] = useState();
-  const DRAGGABLE_PLACES = [{ x: -8, y: 0 }, { x: -8, y: -2 }, { x: -8, y: -4 }, { x: -8, y: -6 }]
+  const DRAGGABLE_PLACES = [{ x: -8, y: 6 }, { x: -8, y: 3 }, { x: -8, y: 0 }, { x: -8, y: -3 }]
   const [lastGeneratedIndex, setLastGeneratedIndex] = useState(DRAGGABLE_PLACES.length);
+  const { rotationX, rotationY } = useControls({ rotationX: {
+    value: Math.PI / 4,
+    min: - Math.PI,
+    max: Math.PI,
+    step: Math.PI / 16,
+  }, rotationY:{
+    value: Math.PI / 4,
+    min: - Math.PI,
+    max: Math.PI,
+    step: Math.PI / 16,
+  } })
 
   useEffect(() => {
     const updatedDraggables = {...draggables };
@@ -126,7 +55,7 @@ const Scene = () => {
 
   const gridSize = 5
   const tileScale = 1
-  const rotation = [Math.PI / 4, Math.PI / 4, 0]
+  const rotation = [rotationX, rotationY, 0]
   const startX = useMemo(() => Math.floor(Math.random() * gridSize), []);
   return (
     <>
@@ -169,6 +98,7 @@ const Scene = () => {
           x={value.x}
           y={value.y}
           tileType={value.tileType}
+          defaultRotation={{ rotationX, rotationY }}
         />
       )}
     </>
