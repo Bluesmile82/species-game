@@ -1,99 +1,73 @@
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { Canvas } from 'react-three-fiber'
 import Draggable from './draggable'
 import Tile from './components/tile'
-import useSetInterval from 'use-set-interval'
-import sample from 'lodash/sample';
+import { TILES } from './constants';
+import Grid from './components/grid';
+import { useControls } from "leva"
 
 import './styles.css'
 
-const TILE_TYPES = ['straight', 'turn'];
-
-const Grid = ({ x, y, draggingPiece, setDraggingPiece, tileScale, resetDraggable }) => {
-  const createArray = (n) =>
-    Array(n)
-      .fill(null)
-      .map((_, i) => i)
-  const setInitialTiles = () =>
-    createArray(x)
-      .map((i) => createArray(y).map((j) => ({ x: i, y: j, state: null, piece: null, color: 'gray', highlighted: false })))
-      .flat()
-
-  const [tiles, setTiles] = useState(setInitialTiles())
-
-  const changeTileState = (tile) => {
-    const updatedTile = tiles.find((t) => t.x === tile.x && t.y === tile.y)
-    const tileIndex = tiles.indexOf(updatedTile)
-    const updatedTiles = [...tiles]
-    updatedTiles[tileIndex] = tile
-    setTiles(updatedTiles)
-  }
-
-  const getRandomTile = () => tiles[Math.floor(Math.random() * tiles.length)]
-
-  const blockTile = () => {
-    const randomTile = getRandomTile()
-    if (!randomTile.state) {
-      randomTile.state = 'blocked'
-      randomTile.positioned = true
-      changeTileState(randomTile)
-    } else {
-      if (tiles.some((t) => t.state !== 'blocked')) {
-        blockTile()
-      }
-    }
-  }
-
-  useSetInterval(() => {
-    blockTile()
-  }, 5000)
-
-  return (
-    <group>
-      {tiles.map((tileProperties) => (
-        <Tile
-          key={`${tileProperties.x}-${tileProperties.y}`}
-          {...tileProperties}
-          draggingPiece={draggingPiece}
-          setDraggingPiece={setDraggingPiece}
-          changeTileState={changeTileState}
-          tileScale={tileScale}
-          resetDraggable={resetDraggable}
-        />
-      ))}
-    </group>
-  )
-}
+const randomProperty = (obj) => {
+  const keys = Object.keys(obj);
+  return obj[keys[keys.length * Math.random() << 0]];
+};
 
 const Scene = () => {
-  let lastGeneratedIndex = 0;
   const [draggingPiece, setDraggingPiece] = useState();
   const [draggables, setDraggables] = useState();
-
-  const createDraggable = () => {
-    lastGeneratedIndex += 1;
-    setDraggables({ ...draggables, [lastGeneratedIndex]: { index: lastGeneratedIndex, x: Math.random() * -8, y: 0, tileType: sample(TILE_TYPES) }});
-  };
+  const DRAGGABLE_PLACES = [{ x: -8, y: 6 }, { x: -8, y: 3 }, { x: -8, y: 0 }, { x: -8, y: -3 }]
+  const [lastGeneratedIndex, setLastGeneratedIndex] = useState(DRAGGABLE_PLACES.length);
+  const { rotationX, rotationY } = useControls({ rotationX: {
+    value: Math.PI / 4,
+    min: - Math.PI,
+    max: Math.PI,
+    step: Math.PI / 16,
+  }, rotationY:{
+    value: Math.PI / 4,
+    min: - Math.PI,
+    max: Math.PI,
+    step: Math.PI / 16,
+  } })
 
   useEffect(() => {
-    createDraggable();
-    createDraggable();
+    const updatedDraggables = {...draggables };
+    DRAGGABLE_PLACES.forEach((draggable, index) => {
+      const { x, y } = draggable;
+      const randomTile = randomProperty(TILES);
+      const { type, rotation } = randomTile;
+      updatedDraggables[index] = {
+        index, x, y, tileType: { type, rotation }
+      };
+    });
+    setDraggables(updatedDraggables);
   }, []);
 
   const resetDraggable = (index) => {
     const updatedDraggables = { ...draggables };
-    delete updatedDraggables[index];
+    const { x, y } = DRAGGABLE_PLACES[index];
+    const { type, rotation } = randomProperty(TILES);
+    updatedDraggables[index] = { ...updatedDraggables[index], x, y, draggableIndex: lastGeneratedIndex + 1, tileType: { type, rotation } , rotation };
+    setLastGeneratedIndex(lastGeneratedIndex + 1)
     setDraggables(updatedDraggables);
-    createDraggable();
   };
 
-  const gridSize = 6
+  const gridSize = 5
   const tileScale = 1
-  const rotation = [Math.PI / 4, Math.PI / 4, 0]
+  const rotation = [rotationX, rotationY, 0]
+  const startX = useMemo(() => Math.floor(Math.random() * gridSize), []);
   return (
     <>
       <group position={[-gridSize, 0, 0]} rotation={rotation}>
+        <Tile
+          key={`initial-tile`}
+          {...{ x: startX, y: -1, state: null, piece: null, color: 'yellow' }}
+          draggingPiece={draggingPiece}
+          setDraggingPiece={setDraggingPiece}
+          tileScale={tileScale}
+          resetDraggable={resetDraggable}
+        />
         <Grid
           x={gridSize}
           y={gridSize}
@@ -102,6 +76,14 @@ const Scene = () => {
           resetDraggable={resetDraggable}
           tileScale={tileScale}
         />
+        <Tile
+          key={`finish-tile`}
+          {...{ x: startX, y: gridSize, state: null, piece: null, color: 'yellow' }}
+          draggingPiece={draggingPiece}
+          setDraggingPiece={setDraggingPiece}
+          tileScale={tileScale}
+          resetDraggable={resetDraggable}
+        />
       </group>
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
@@ -109,12 +91,14 @@ const Scene = () => {
       {draggables && Object.entries(draggables).map(([key, value]) =>
         <Draggable
           setDraggingPiece={setDraggingPiece}
+          draggableIndex={value.draggableIndex}
           tileScale={tileScale}
-          key={value.index}
+          key={value.draggableIndex || value.index}
           index={key}
           x={value.x}
           y={value.y}
           tileType={value.tileType}
+          defaultRotation={{ rotationX, rotationY }}
         />
       )}
     </>
@@ -124,7 +108,7 @@ const Scene = () => {
 const App = () => {
   return (
     <div className="container">
-      <Canvas camera={{ zoom: 10, position: [0, 0, 100] }}>
+      <Canvas camera={{ zoom: 10, position: [0, 0, 200] }}>
         <Suspense fallback={null}>
           <Scene />
         </Suspense>

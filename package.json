@@ -8,6 +8,7 @@
     "@babel/core": "7.12.10",
     "babel-plugin-glsl": "1.0.0",
     "drei": "0.0.72",
+    "leva": "^0.9.8",
     "randomcolor": "0.6.2",
     "react": "16.9.0",
     "react-dom": "16.9.0",

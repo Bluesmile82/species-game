@@ -9,6 +9,7 @@ const Tile = ({
   color,
   draggingPiece,
   state,
+  rotation=0,
   positioned,
   changeTileState,
   tileScale,
@@ -44,7 +45,7 @@ const Tile = ({
       changeTileState({
         ...currentTile,
         highlighted,
-        state: highlighted ? draggingPiece.type : null,
+        state: highlighted ? draggingPiece.tileType.type : null,
       });
     }
   };
@@ -52,31 +53,42 @@ const Tile = ({
     <mesh
       attach="mesh"
       scale={[scale, scale / 4, scale]}
+      rotation={[0, (rotation * Math.PI) / 2, 0]}
       position={[x * 2 * scale, 0, y * 2 * scale]}
-      onPointerOver={() => {
-        if (draggingPiece) {
-          setHighlighted(true);
-        }
-      }}
-      onPointerUp={() => {
-        if (draggingPiece) {
-          resetDraggable(draggingPiece.index);
-          changeTileState({
-            ...currentTile,
-            state: draggingPiece.type,
-            positioned: true,
-          });
-        }
-      }}
+      onPointerOver={
+        changeTileState &&
+        (() => {
+          if (draggingPiece) {
+            setHighlighted(true);
+          }
+        })
+      }
+      onPointerUp={
+        changeTileState &&
+        (() => {
+          if (draggingPiece) {
+            if (!currentTile.positioned) {
+              resetDraggable(draggingPiece.index, draggingPiece.draggableIndex);
+              changeTileState({
+                ...currentTile,
+                state: draggingPiece.tileType.type,
+                rotation: draggingPiece.tileType.rotation,
+                positioned: true,
+              });
+            }
+          }
+        })
+      }
       material={material}
       geometry={geometry}
-      onPointerOut={() => setHighlighted(false)}
+      onPointerOut={changeTileState && (() => setHighlighted(false))}
     >
       <meshPhongMaterial
         attach="material"
         opacity={highlighted || state ? 1 : 0.2}
         transparent
         map={texture}
+        color={color}
       />
     </mesh>
   );
