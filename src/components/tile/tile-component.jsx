@@ -14,14 +14,16 @@ const Tile = ({
   changeTileState,
   tileScale,
   highlighted,
-  onFitPiece
+  onFitPiece,
+  isPartOfFinishRoad
 }) => {
   const gltf = useLoader(GLTFLoader, '/cube.glb');
   const textureUrl =
     {
       blocked: '/lava.png',
       straight: '/road-1.jpg',
-      turn: '/road-2.jpg'
+      turn: '/road-2.jpg',
+      arrow: '/arrow.jpg'
     }[state] || '/jungle.jpg';
   const texture = useMemo(() => new THREE.TextureLoader().load(textureUrl), [
     textureUrl
@@ -69,7 +71,7 @@ const Tile = ({
         (() => {
           if (draggingPiece) {
             if (!currentTile.positioned) {
-              onFitPiece(draggingPiece.index, draggingPiece.draggableIndex);
+              onFitPiece({ index: draggingPiece.index, x, y });
               changeTileState({
                 ...currentTile,
                 state: draggingPiece.tileType.type,
@@ -89,7 +91,7 @@ const Tile = ({
         opacity={highlighted || state ? 1 : 0.2}
         transparent
         map={texture}
-        color={color}
+        color={isPartOfFinishRoad ? 'yellow' : color}
       />
     </mesh>
   );

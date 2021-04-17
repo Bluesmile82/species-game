@@ -1,7 +1,6 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useThree, useLoader } from 'react-three-fiber';
 import { useDrag } from 'react-use-gesture';
-import usePrevious from './hooks/use-previous';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 
@@ -33,13 +32,6 @@ function Draggable({
   } = gltf;
 
   const [position, setPosition] = useState([0, 0, tileScale * 3]);
-
-  const previousDraggableIndex = usePrevious(draggableIndex);
-  useEffect(() => {
-    if (draggableIndex && draggableIndex !== previousDraggableIndex) {
-      setPosition([x, y, tileScale * 3]);
-    }
-  }, [draggableIndex]);
 
   const { size, viewport } = useThree();
   const aspect = (size.width * 10) / viewport.width;

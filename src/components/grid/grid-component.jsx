@@ -8,7 +8,8 @@ const Grid = ({
   draggingPiece,
   setDraggingPiece,
   tileScale,
-  onFitPiece
+  onFitPiece,
+  finishRoad
 }) => {
   const createArray = (n) =>
     Array(n)
@@ -54,8 +55,7 @@ const Grid = ({
 
   useSetInterval(() => {
     blockTile();
-  }, 10000);
-
+  }, 100000);
   return (
     <group>
       {tiles.map((tileProperties) => (
@@ -67,6 +67,12 @@ const Grid = ({
           changeTileState={changeTileState}
           tileScale={tileScale}
           onFitPiece={onFitPiece}
+          isPartOfFinishRoad={
+            finishRoad &&
+            finishRoad.find(
+              (t) => tileProperties.x === t.x && tileProperties.y === t.y
+            )
+          }
         />
       ))}
     </group>
