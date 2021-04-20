@@ -47,7 +47,7 @@ const Scene = () => {
     });
     setDraggables(updatedDraggables);
     // eslint-disable-next-line
-  }, [DRAGGABLE_PLACES]);
+  }, []);
 
   const checkFinish = (fittedPieces) => {
     const road = [];
