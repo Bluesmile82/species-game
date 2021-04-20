@@ -46,7 +46,8 @@ const Scene = () => {
       };
     });
     setDraggables(updatedDraggables);
-  }, []);
+    // eslint-disable-next-line
+  }, [DRAGGABLE_PLACES]);
 
   const checkFinish = (fittedPieces) => {
     const road = [];
@@ -126,9 +127,9 @@ const Scene = () => {
       <group position={[-gridSize, 0, 0]} rotation={rotation}>
         <Tile
           key={`initial-tile`}
-          {...{ x: startX, y: -1, piece: null, color: 'yellow', state: 'arrow' }}
-          draggingPiece={draggingPiece}
-          setDraggingPiece={setDraggingPiece}
+          x={startX}
+          y={-1}
+          state="arrow"
           tileScale={tileScale}
         />
         <Grid
@@ -142,9 +143,9 @@ const Scene = () => {
         />
         <Tile
           key={`finish-tile`}
-          {...{ x: finishX, y: gridSize, piece: null, color: 'yellow', state: 'arrow' }}
-          draggingPiece={draggingPiece}
-          setDraggingPiece={setDraggingPiece}
+          x={finishX}
+          y={gridSize}
+          state="arrow"
           tileScale={tileScale}
         />
       </group>

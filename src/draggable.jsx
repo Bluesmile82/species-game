@@ -15,6 +15,7 @@ function Draggable({
   defaultRotation
 }) {
   const ref = useRef();
+  const [dragging, setDragging] = useState();
   const textureUrl =
     {
       jungle: '/jungle.jpg',
@@ -39,8 +40,12 @@ function Draggable({
     ({ offset, first, last }) => {
       const [xOffset, yOffset] = offset;
       const [, , pz] = position;
-      if (first) setDraggingPiece({ tileType, index, draggableIndex });
+      if (first) {
+        setDragging(true);
+        setDraggingPiece({ tileType, index, draggableIndex });
+      }
       if (last) {
+        setDragging(false);
         setDraggingPiece(null);
       }
       setPosition([xOffset / aspect, -yOffset / aspect, pz]);
@@ -60,7 +65,13 @@ function Draggable({
         geometry={geometry}
       >
         <boxBufferGeometry attach="geometry" />
-        <meshBasicMaterial attach="material" map={texture} color="lightblue" />
+        <meshBasicMaterial
+          attach="material"
+          map={texture}
+          color="lightblue"
+          opacity={dragging ? 0.5 : 1}
+          transparent
+        />
       </mesh>
     </group>
   );

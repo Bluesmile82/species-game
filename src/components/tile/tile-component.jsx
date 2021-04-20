@@ -47,14 +47,16 @@ const Tile = ({
       changeTileState({
         ...currentTile,
         highlighted,
-        state: highlighted ? draggingPiece.tileType.type : null
+        state: highlighted ? draggingPiece.tileType.type : null,
+        rotation: highlighted && draggingPiece.tileType.rotation
       });
     }
   };
+  const scaleY = state ? scale / 4 : scale / 10;
   return (
     <mesh
       attach="mesh"
-      scale={[scale, scale / 4, scale]}
+      scale={[scale, scaleY, scale]}
       rotation={[0, (rotation * Math.PI) / 2, 0]}
       position={[x * 2 * scale, 0, y * 2 * scale]}
       onPointerOver={
