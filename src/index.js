@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { Canvas } from 'react-three-fiber'
 import Draggable from './draggable'
 import Tile from './components/tile'
+import TileButton from './components/tile-button'
 import { TILES } from './constants';
 import Grid from './components/grid';
 import { useControls } from "leva"
@@ -18,13 +19,15 @@ const Scene = () => {
   const [draggables, setDraggables] = useState();
   const DRAGGABLE_PLACES = [{ x: -8, y: 6 }, { x: -8, y: 3 }, { x: -8, y: 0 }, { x: -8, y: -3 }]
   const [lastGeneratedIndex, setLastGeneratedIndex] = useState(DRAGGABLE_PLACES.length);
+  const baseRotationX = Math.PI / 5.75;
+  const baseRotationY = Math.PI / 4;
   const { rotationX, rotationY } = useControls({ rotationX: {
-    value: Math.PI / 5.75,
+    value: baseRotationX,
     min: - Math.PI,
     max: Math.PI,
     step: Math.PI / 16,
   }, rotationY:{
-    value: Math.PI / 4,
+    value: baseRotationY,
     min: - Math.PI,
     max: Math.PI,
     step: Math.PI / 16,
@@ -35,6 +38,17 @@ const Scene = () => {
   const rotation = [rotationX, rotationY, 0]
   const startX = useMemo(() => Math.floor(Math.random() * gridSize), []);
   const finishX = useMemo(() => Math.floor(Math.random() * gridSize), []);
+  const rotateAll = () => {
+    const updatedDraggables = {};
+    Object.keys(draggables).map(d => {
+      const updatedD = draggables[d];
+      const type = { rotation: +updatedD.tileType.rotation + 1, type: updatedD.tileType.type };
+      const newTile = TILES.find(t => t.rotation === type.rotation && t.type === type.type );
+      updatedDraggables[d] = {...updatedD, tileType: newTile}
+    });
+    setDraggables(updatedDraggables);
+  }
+  console.log(`%cdraggables`,'font-size: 12px; color: green; font-weight: bold', draggables );
 
   useEffect(() => {
     const updatedDraggables = {...draggables };
@@ -148,6 +162,15 @@ const Scene = () => {
           state="arrow"
           tileScale={tileScale}
         />
+        <TileButton
+          onClick={rotateAll}
+          key={`rotate-tile-button`}
+          x={-1}
+          y={gridSize}
+          state="rotate"
+          color="red"
+          tileScale={tileScale}
+        />
       </group>
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
@@ -172,7 +195,7 @@ const Scene = () => {
 const App = () => {
   return (
     <div className="container">
-      <Canvas camera={{ zoom: 10, position: [0, 0, 100] }}>
+      <Canvas camera={{ zoom: 10, position: [0, 0, 130] }}>
         <Suspense fallback={null}>
           <Scene />
         </Suspense>
