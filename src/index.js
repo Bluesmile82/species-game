@@ -47,8 +47,8 @@ const Scene = () => {
       updatedDraggables[d] = {...updatedD, tileType: newTile}
     });
     setDraggables(updatedDraggables);
+    return undefined;
   }
-  console.log(`%cdraggables`,'font-size: 12px; color: green; font-weight: bold', draggables );
 
   useEffect(() => {
     const updatedDraggables = {...draggables };
