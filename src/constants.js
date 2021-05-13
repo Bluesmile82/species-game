@@ -1,4 +1,5 @@
 const TILE_TYPES = { straight: 'straight', turn: 'turn' };
+export const TILE_ROTATIONS = { straight: 2, turn: 4 };
 const TILES_KINDS = {
   '1010' : {
     type: TILE_TYPES.straight,

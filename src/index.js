@@ -1,10 +1,9 @@
 import React, { Suspense, useEffect, useState, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { Canvas } from 'react-three-fiber'
-import Draggable from './draggable'
+import Draggable from './components/draggable/draggable-component'
 import Tile from './components/tile'
-import TileButton from './components/tile-button'
-import { TILES } from './constants';
+import { TILES, TILE_ROTATIONS } from './constants';
 import Grid from './components/grid';
 import { useControls } from "leva"
 
@@ -38,15 +37,16 @@ const Scene = () => {
   const rotation = [rotationX, rotationY, 0]
   const startX = useMemo(() => Math.floor(Math.random() * gridSize), []);
   const finishX = useMemo(() => Math.floor(Math.random() * gridSize), []);
-  const rotateAll = () => {
-    const updatedDraggables = {};
-    Object.keys(draggables).map(d => {
-      const updatedD = draggables[d];
-      const type = { rotation: +updatedD.tileType.rotation + 1, type: updatedD.tileType.type };
-      const newTile = TILES.find(t => t.rotation === type.rotation && t.type === type.type );
-      updatedDraggables[d] = {...updatedD, tileType: newTile}
-    });
-    setDraggables(updatedDraggables);
+
+  const rotatePiece = (piece) => {
+    const rotationsNumber = TILE_ROTATIONS[piece.tileType.type];
+    if (rotationsNumber) {
+      const type = { rotation: (+piece.tileType.rotation + 1) % rotationsNumber, type: piece.tileType.type };
+      const newTileType = TILES.find(t => t.rotation === type.rotation && t.type === type.type );
+      const updatedDraggables = { ...draggables };
+      updatedDraggables[piece.index] = { ...piece, tileType: newTileType };
+      setDraggables(updatedDraggables);
+    }
     return undefined;
   }
 
@@ -162,15 +162,6 @@ const Scene = () => {
           state="arrow"
           tileScale={tileScale}
         />
-        <TileButton
-          onClick={rotateAll}
-          key={`rotate-tile-button`}
-          x={-1}
-          y={gridSize}
-          state="rotate"
-          color="red"
-          tileScale={tileScale}
-        />
       </group>
       <ambientLight intensity={0.1} />
       <spotLight intensity={0.8} position={[300, 300, 400]} />
@@ -185,6 +176,7 @@ const Scene = () => {
           x={value.x}
           y={value.y}
           tileType={value.tileType}
+          handleRotatePiece={rotatePiece}
           defaultRotation={{ rotationX, rotationY }}
         />
       )}
